@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -14,17 +15,25 @@ type notifier struct {
 	webhookURL     string
 	webhookChannel string
 	owner          string
+	hostname       string
 	events         map[string]*eventLog
 	ch             chan *eventLog
 	rc             *resty.Client
 }
 
 func newNotifier(app, url, channel, owner string) *notifier {
+	hostname, err := os.Hostname()
+	if err != nil {
+		fmt.Println("os hostname error: ", err)
+		hostname = "unknown"
+	}
+
 	v := &notifier{
 		app:            app,
 		webhookURL:     url,
 		webhookChannel: channel,
 		owner:          owner,
+		hostname:       hostname,
 		events:         map[string]*eventLog{},
 		ch:             make(chan *eventLog, 8),
 		rc:             resty.New().SetRetryCount(3),
@@ -80,6 +89,11 @@ func (n *notifier) newWebhookMessage(evt *eventLog) *slack.WebhookPayload {
 					{
 						Title: "app",
 						Value: n.app,
+						Short: false,
+					},
+					{
+						Title: "hostname",
+						Value: n.hostname,
 						Short: true,
 					},
 					{

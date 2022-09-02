@@ -2,8 +2,10 @@ package internal
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/hpcloud/tail"
@@ -31,7 +33,11 @@ func (w *Watcher) Watch(filename string, config *Config) error {
 
 	fmt.Printf("start watch `%s`\n", filename)
 	fmt.Printf("watch level `%s`\n", w.config.Level)
-	fmt.Printf("webhook url `%s`\n", w.config.WebhookURL)
+	fmt.Printf("watch hostname `%s`\n", w.notifier.hostname)
+
+	urlLength := len(w.config.WebhookURL)
+	maskingLength := int(math.Min(float64(urlLength), 20))
+	fmt.Printf("webhook url `%s%s`\n", w.config.WebhookURL[:urlLength-maskingLength], strings.Repeat("*", maskingLength))
 
 	for line := range w.file.Lines {
 		matches := w.pattern.FindStringSubmatch(line.Text)

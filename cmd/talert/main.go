@@ -18,6 +18,7 @@ func main() {
 		webhookAppID   string
 		webhookOwner   string
 	)
+
 	app := &cli.App{
 		Name:     "talert",
 		Usage:    "read, check and alert from continuously updated files",
@@ -29,6 +30,7 @@ func main() {
 				Email: "iwaltgen@gmail.com",
 			},
 		},
+
 		EnableBashCompletion: true,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
