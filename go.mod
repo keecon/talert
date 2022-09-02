@@ -10,7 +10,7 @@ require (
 	github.com/hpcloud/tail v1.0.0
 	github.com/iwaltgen/magex v0.7.3
 	github.com/magefile/mage v1.13.0
-	github.com/mfridman/tparse v0.9.0
+	github.com/mfridman/tparse v0.11.1
 	github.com/urfave/cli/v2 v2.14.0
 	golang.org/x/tools v0.1.12
 )
@@ -43,6 +43,7 @@ require (
 	github.com/butuzov/ireturn v0.1.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/charithe/durationcheck v0.0.9 // indirect
+	github.com/charmbracelet/lipgloss v0.4.0 // indirect
 	github.com/chavacava/garif v0.0.0-20220630083739-93517212f375 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/curioswitch/go-reassign v0.1.2 // indirect
@@ -106,6 +107,7 @@ require (
 	github.com/ldez/gomoddirectives v0.2.3 // indirect
 	github.com/ldez/tagliatelle v0.3.1 // indirect
 	github.com/leonklingele/grouper v1.1.0 // indirect
+	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/lufeee/execinquery v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/maratori/testpackage v1.1.0 // indirect
@@ -120,6 +122,8 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/moricho/tparallel v0.2.1 // indirect
+	github.com/muesli/reflow v0.3.0 // indirect
+	github.com/muesli/termenv v0.11.0 // indirect
 	github.com/nakabonne/nestif v0.3.1 // indirect
 	github.com/nbutton23/zxcvbn-go v0.0.0-20210217022336-fa2cb2858354 // indirect
 	github.com/nishanths/exhaustive v0.8.1 // indirect
