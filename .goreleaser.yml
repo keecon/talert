@@ -1,0 +1,33 @@
+builds:
+- id: talert
+  main: cmd/talert/main.go
+  binary: talert
+  flags:
+  - -trimpath
+  ldflags:
+  - -X github.com/keecon/talert/internal.version={{.Env.VERSION}}
+  - -X github.com/keecon/talert/internal.commitHash={{.Env.GITHUB_SHA}}
+  - -X github.com/keecon/talert/internal.buildDate={{.Env.BUILD_TIME}}
+  env:
+  - CGO_ENABLED=0
+  goos:
+  - linux
+  - darwin
+  - windows
+  goarch:
+  - amd64
+  - arm64
+
+archives:
+- id: release
+  builds:
+  - talert
+  format_overrides:
+  - goos: windows
+    format: zip
+
+changelog:
+  skip: false
+  filters:
+    exclude:
+    - 'chore: bump version'

@@ -1,0 +1,54 @@
+name: build
+
+on:
+  push:
+    branches:
+    - main
+    paths-ignore:
+    - 'configs/**'
+    - 'tools/**'
+    - '**.md'
+  pull_request:
+    branches:
+    - main
+    paths-ignore:
+    - 'configs/**'
+    - 'tools/**'
+    - '**.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version: '1.19'
+        check-latest: true
+    - uses: actions/cache@v3
+      with:
+        path: |
+          ~/go/pkg/mod
+          ~/go/bin
+          ~/.cache/go-build
+        key: ${{ runner.os }}-go-1.19-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-go-1.19-
+    - uses: golangci/golangci-lint-action@v3
+    - uses: bufbuild/buf-setup-action@v1
+      with:
+        github_token: ${{ github.token }}
+
+    - name: check tools
+      id: check_tools
+      uses: andstor/file-existence-action@v1.1.0
+      with:
+        files: '/home/runner/go/bin/tparse'
+
+    - name: setup tools
+      if: steps.check_tools.outputs.files_exists != 'true'
+      run: |
+        go install github.com/mfridman/tparse
+
+    - name: test
+      run: go test ./... -coverprofile coverage.txt -json | tparse -all
