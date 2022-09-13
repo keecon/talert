@@ -11,7 +11,7 @@ require (
 	github.com/iwaltgen/magex v0.7.3
 	github.com/magefile/mage v1.13.0
 	github.com/mfridman/tparse v0.11.1
-	github.com/urfave/cli/v2 v2.14.1
+	github.com/urfave/cli/v2 v2.16.3
 	golang.org/x/tools v0.1.12
 )
 
