@@ -76,20 +76,30 @@ func (n *notifier) sendEventMessage(evt *eventLog) error {
 }
 
 func (n *notifier) newWebhookMessage(evt *eventLog) *slack.WebhookPayload {
+	stacktrace := strings.Join(evt.lines, "\n")
+	length := len(stacktrace)
+	if 3900 < length {
+		stacktrace = stacktrace[:3900] + "..."
+	}
+
 	return &slack.WebhookPayload{
 		Channel:   n.webhookChannel,
 		Username:  "TAIL ALERT",
 		IconEmoji: ":rotating_light:",
+		Text:      fmt.Sprintf("ALERT LEVEL `%s` :fire: MESSAGE `%s`\n```%s```", evt.level, evt.message, stacktrace),
 		Attachments: []*slack.Attachment{
 			{
 				Color: "danger",
-				Title: fmt.Sprintf("TAIL ALERT `%s`", evt.level),
-				Text:  fmt.Sprintf("ERROR MESSAGE `%s`", evt.message),
 				Fields: []*slack.Field{
 					{
 						Title: "app",
 						Value: n.app,
-						Short: false,
+						Short: true,
+					},
+					{
+						Title: "level",
+						Value: evt.level,
+						Short: true,
 					},
 					{
 						Title: "hostname",
@@ -100,11 +110,6 @@ func (n *notifier) newWebhookMessage(evt *eventLog) *slack.WebhookPayload {
 						Title: "owner",
 						Value: n.owner,
 						Short: true,
-					},
-					{
-						Title: "call stack",
-						Value: strings.Join(evt.lines, "\n"),
-						Short: false,
 					},
 				},
 				Footer:     "tail-alert",

@@ -18,7 +18,6 @@ type Field struct {
 
 // Attachment is Attaching content and links to messages
 //
-// https://api.slack.com/docs/message-
 // https://api.slack.com/reference/messaging/attachments
 type Attachment struct {
 	/**
