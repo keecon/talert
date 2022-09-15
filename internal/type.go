@@ -10,18 +10,20 @@ import (
 // Config is used to specify how a file must be tailed.
 type Config struct {
 	tail.Config
-	// Pattern is the error level and message pattern in a log line.
+	// Pattern is the log level and message pattern in a log line.
 	Pattern string
-	// Level if match error level then notify alert.
-	Level string
+	// Levels if match log level then notify alert.
+	Levels []string
 	// WebhookURL is slack incoming webhook URL.
 	WebhookURL string
 	// WebhookChannel is slack incoming webhook channel.
 	WebhookChannel string
 	// WebhookAppID is webhook message field.
 	WebhookAppID string
-	// WebhookOwner is webhook message field.
-	WebhookOwner string
+	// WebhookOwners is webhook message field.
+	WebhookOwners []string
+	// WebhookTextFormat is webhook message text format.
+	WebhookTextFormat string
 }
 
 type eventLog struct {

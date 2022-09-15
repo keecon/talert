@@ -11,17 +11,15 @@ import (
 )
 
 type notifier struct {
-	app            string
-	webhookURL     string
-	webhookChannel string
-	owner          string
-	hostname       string
-	events         map[string]*eventLog
-	ch             chan *eventLog
-	rc             *resty.Client
+	config   *Config
+	hostname string
+	owners   string
+	events   map[string]*eventLog
+	ch       chan *eventLog
+	rc       *resty.Client
 }
 
-func newNotifier(app, url, channel, owner string) *notifier {
+func newNotifier(config *Config) *notifier {
 	hostname, err := os.Hostname()
 	if err != nil {
 		fmt.Println("os hostname error: ", err)
@@ -29,14 +27,12 @@ func newNotifier(app, url, channel, owner string) *notifier {
 	}
 
 	v := &notifier{
-		app:            app,
-		webhookURL:     url,
-		webhookChannel: channel,
-		owner:          owner,
-		hostname:       hostname,
-		events:         map[string]*eventLog{},
-		ch:             make(chan *eventLog, 8),
-		rc:             resty.New().SetRetryCount(3),
+		config:   config,
+		hostname: hostname,
+		owners:   strings.Join(config.WebhookOwners, ","),
+		events:   map[string]*eventLog{},
+		ch:       make(chan *eventLog, 8),
+		rc:       resty.New().SetRetryCount(3),
 	}
 
 	go v.run()
@@ -67,7 +63,7 @@ func (n *notifier) sendEventMessage(evt *eventLog) error {
 		SetHeader("Content-Type", "application/json").
 		SetBody(n.newWebhookMessage(evt)).
 		SetResult(&statusText).
-		Post(n.webhookURL)
+		Post(n.config.WebhookURL)
 
 	if err == nil {
 		fmt.Println("send event message complete: ", statusText)
@@ -83,17 +79,17 @@ func (n *notifier) newWebhookMessage(evt *eventLog) *slack.WebhookPayload {
 	}
 
 	return &slack.WebhookPayload{
-		Channel:   n.webhookChannel,
+		Channel:   n.config.WebhookChannel,
 		Username:  "TAIL ALERT",
 		IconEmoji: ":rotating_light:",
-		Text:      fmt.Sprintf("ALERT LEVEL `%s` :fire: MESSAGE `%s`\n```%s```", evt.level, evt.message, stacktrace),
+		Text:      fmt.Sprintf(n.config.WebhookTextFormat, evt.level, evt.message, stacktrace),
 		Attachments: []*slack.Attachment{
 			{
 				Color: "danger",
 				Fields: []*slack.Field{
 					{
 						Title: "app",
-						Value: n.app,
+						Value: n.config.WebhookAppID,
 						Short: true,
 					},
 					{
@@ -108,7 +104,7 @@ func (n *notifier) newWebhookMessage(evt *eventLog) *slack.WebhookPayload {
 					},
 					{
 						Title: "owner",
-						Value: n.owner,
+						Value: n.owners,
 						Short: true,
 					},
 				},

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/hpcloud/tail"
+	"golang.org/x/exp/slices"
 )
 
 // Watcher is tailing the file, check and pass event to the notifier
@@ -32,7 +33,7 @@ func (w *Watcher) Watch(filename string, config *Config) error {
 	defer w.file.Cleanup()
 
 	fmt.Printf("start watch `%s`\n", filename)
-	fmt.Printf("watch level `%s`\n", w.config.Level)
+	fmt.Printf("watch levels `%s`\n", w.config.Levels)
 	fmt.Printf("watch hostname `%s`\n", w.notifier.hostname)
 
 	urlLength := len(w.config.WebhookURL)
@@ -45,7 +46,7 @@ func (w *Watcher) Watch(filename string, config *Config) error {
 		if w.isStartLogLine(matches) {
 			evt := newEvent(matches, line.Time)
 
-			for evt != nil && evt.level == config.Level {
+			for evt != nil && slices.Contains(config.Levels, evt.level) {
 				evt = w.collectEventLog(evt)
 			}
 		}
@@ -109,11 +110,6 @@ func (w *Watcher) setup(filename string, config *Config) (err error) {
 		return fmt.Errorf("open file error: %w", err)
 	}
 
-	w.notifier = newNotifier(
-		w.config.WebhookAppID,
-		w.config.WebhookURL,
-		w.config.WebhookChannel,
-		w.config.WebhookOwner,
-	)
+	w.notifier = newNotifier(w.config)
 	return nil
 }

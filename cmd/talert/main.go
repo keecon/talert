@@ -11,16 +11,15 @@ import (
 
 func main() {
 	var (
-		pattern        string
-		level          string
-		webhookURL     string
-		webhookChannel string
-		webhookAppID   string
-		webhookOwner   string
+		pattern           string
+		webhookURL        string
+		webhookChannel    string
+		webhookAppID      string
+		webhookTextFormat string
 	)
 
 	app := &cli.App{
-		Name:     "talert",
+		Name:     "tail alert",
 		Usage:    "read, check and alert from continuously updated files",
 		Version:  internal.Version(),
 		Compiled: internal.BuildDate(),
@@ -41,13 +40,12 @@ func main() {
 				Usage:       "message pattern in a log line (must need 2 submatch)",
 				EnvVars:     []string{"TALERT_PATTERN"},
 			},
-			&cli.StringFlag{
-				Name:        "level",
-				Aliases:     []string{"l"},
-				Value:       "ERROR",
-				Destination: &level,
-				Usage:       "notify log level",
-				EnvVars:     []string{"TALERT_LEVEL"},
+			&cli.StringSliceFlag{
+				Name:    "level",
+				Aliases: []string{"l"},
+				Value:   cli.NewStringSlice("ERROR"),
+				Usage:   "notify log level",
+				EnvVars: []string{"TALERT_LEVEL"},
 			},
 			&cli.StringFlag{
 				Name:        "webhook-url",
@@ -58,7 +56,7 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:        "webhook-channel",
-				Usage:       "slack channel",
+				Usage:       "slack incoming webhook channel",
 				Destination: &webhookChannel,
 				EnvVars:     []string{"TALERT_WEBHOOK_CHANNEL"},
 				Required:    true,
@@ -70,12 +68,18 @@ func main() {
 				EnvVars:     []string{"TALERT_WEBHOOK_APP_ID"},
 				Required:    true,
 			},
+			&cli.StringSliceFlag{
+				Name:     "webhook-owner",
+				Usage:    "slack message owner field",
+				EnvVars:  []string{"TALERT_WEBHOOK_OWNER"},
+				Required: true,
+			},
 			&cli.StringFlag{
-				Name:        "webhook-owner",
-				Usage:       "slack message owner field",
-				Destination: &webhookOwner,
-				EnvVars:     []string{"TALERT_WEBHOOK_OWNER"},
-				Required:    true,
+				Name:        "webhook-text-format",
+				Usage:       "slack message text format (must need 3 string placeholder)",
+				Value:       "ALERT LEVEL `%s` :fire: MESSAGE `%s`\n```%s```",
+				Destination: &webhookTextFormat,
+				EnvVars:     []string{"TALERT_WEBHOOK_TEXT_FORMAT"},
 			},
 		},
 
@@ -84,12 +88,13 @@ func main() {
 			watcher := internal.NewWatcher()
 
 			return watcher.Watch(filename, &internal.Config{
-				Pattern:        pattern,
-				Level:          level,
-				WebhookAppID:   webhookAppID,
-				WebhookURL:     webhookURL,
-				WebhookChannel: webhookChannel,
-				WebhookOwner:   webhookOwner,
+				Pattern:           pattern,
+				Levels:            ctx.StringSlice("level"),
+				WebhookAppID:      webhookAppID,
+				WebhookURL:        webhookURL,
+				WebhookChannel:    webhookChannel,
+				WebhookOwners:     ctx.StringSlice("webhook-owner"),
+				WebhookTextFormat: webhookTextFormat,
 			})
 		},
 	}
