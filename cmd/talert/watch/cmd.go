@@ -1,4 +1,4 @@
-package main
+package watch
 
 import (
 	"github.com/urfave/cli/v2"
@@ -6,14 +6,15 @@ import (
 	"github.com/keecon/talert/internal"
 )
 
-func newWatchCmd() *cli.Command {
-	var (
-		webhookURL        string
-		webhookChannel    string
-		webhookAppID      string
-		webhookTextFormat string
-	)
+var (
+	webhookURL        string
+	webhookChannel    string
+	webhookAppID      string
+	webhookTextFormat string
+)
 
+// NewCmd creates Command
+func NewCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "watch",
 		Usage: "read, check and alert from continuously updated files",
@@ -68,24 +69,6 @@ func newWatchCmd() *cli.Command {
 				WebhookChannel:    webhookChannel,
 				WebhookOwners:     ctx.StringSlice("webhook-owner"),
 				WebhookTextFormat: webhookTextFormat,
-			})
-		},
-	}
-}
-
-func newTestCmd() *cli.Command {
-	return &cli.Command{
-		Name:  "test",
-		Usage: "check message pattern in file",
-
-		Action: func(ctx *cli.Context) error {
-			filename := ctx.Args().First()
-			tester := internal.NewTester()
-
-			return tester.Test(filename, &internal.Config{
-				Pattern:  ctx.String("pattern"),
-				Levels:   ctx.StringSlice("level"),
-				Excludes: ctx.StringSlice("exclude"),
 			})
 		},
 	}

@@ -6,6 +6,8 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/keecon/talert/cmd/talert/test"
+	"github.com/keecon/talert/cmd/talert/watch"
 	"github.com/keecon/talert/internal"
 )
 
@@ -50,8 +52,8 @@ func main() {
 		},
 
 		Commands: cli.Commands{
-			newWatchCmd(),
-			newTestCmd(),
+			watch.NewCmd(),
+			test.NewCmd(),
 		},
 
 		Before: func(ctx *cli.Context) error {
