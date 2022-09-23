@@ -14,6 +14,8 @@ type Config struct {
 	Pattern string
 	// Levels if match log level then notify alert.
 	Levels []string
+	// Excludes if match word then don't notify alert.
+	Excludes []string
 	// WebhookURL is slack incoming webhook URL.
 	WebhookURL string
 	// WebhookChannel is slack incoming webhook channel.

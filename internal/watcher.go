@@ -43,6 +43,12 @@ func (w *Watcher) Watch(filename string, config *Config) error {
 	for line := range w.file.Lines {
 		matches := w.pattern.FindStringSubmatch(line.Text)
 
+		for _, v := range w.config.Excludes {
+			if strings.Contains(line.Text, v) {
+				continue
+			}
+		}
+
 		if w.isStartLogLine(matches) {
 			evt := newEvent(matches, line.Time)
 
@@ -51,6 +57,33 @@ func (w *Watcher) Watch(filename string, config *Config) error {
 			}
 		}
 	}
+	return nil
+}
+
+func (w *Watcher) setup(filename string, config *Config) (err error) {
+	w.config = config
+
+	w.config.ReOpen = true
+	w.config.MustExist = true
+	w.config.Follow = true
+	if w.config.Location == nil {
+		w.config.Location = &tail.SeekInfo{Whence: os.SEEK_END}
+	}
+	if w.config.Logger == nil {
+		w.config.Logger = tail.DiscardingLogger
+	}
+
+	w.pattern, err = regexp.Compile(w.config.Pattern)
+	if err != nil {
+		return fmt.Errorf("regexp compile error: %w", err)
+	}
+
+	w.file, err = tail.TailFile(filename, config.Config)
+	if err != nil {
+		return fmt.Errorf("open file error: %w", err)
+	}
+
+	w.notifier = newNotifier(w.config)
 	return nil
 }
 
@@ -85,31 +118,4 @@ func (w *Watcher) collectEventLog(evt *eventLog) *eventLog {
 			return nil
 		}
 	}
-}
-
-func (w *Watcher) setup(filename string, config *Config) (err error) {
-	w.config = config
-
-	w.config.ReOpen = true
-	w.config.MustExist = true
-	w.config.Follow = true
-	if w.config.Location == nil {
-		w.config.Location = &tail.SeekInfo{Whence: os.SEEK_END}
-	}
-	if w.config.Logger == nil {
-		w.config.Logger = tail.DiscardingLogger
-	}
-
-	w.pattern, err = regexp.Compile(w.config.Pattern)
-	if err != nil {
-		return fmt.Errorf("regexp compile error: %w", err)
-	}
-
-	w.file, err = tail.TailFile(filename, config.Config)
-	if err != nil {
-		return fmt.Errorf("open file error: %w", err)
-	}
-
-	w.notifier = newNotifier(w.config)
-	return nil
 }

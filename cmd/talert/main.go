@@ -41,6 +41,12 @@ func main() {
 				EnvVars:     []string{"TALERT_PATTERN"},
 			},
 			&cli.StringSliceFlag{
+				Name:    "exclude",
+				Aliases: []string{"e"},
+				Usage:   "exclude message word",
+				EnvVars: []string{"TALERT_EXCLUDE"},
+			},
+			&cli.StringSliceFlag{
 				Name:    "level",
 				Aliases: []string{"l"},
 				Value:   cli.NewStringSlice("ERROR"),
