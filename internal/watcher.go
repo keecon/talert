@@ -37,7 +37,7 @@ func (p *Watcher) Watch(filename string, config *Config) error {
 
 	urlLength := len(p.config.WebhookURL)
 	maskingLength := int(math.Min(float64(urlLength), 20))
-	log.Println("webhook url: ", p.config.WebhookURL[:urlLength-maskingLength], strings.Repeat("*", maskingLength))
+	log.Println("webhook url: ", p.config.WebhookURL[:urlLength-maskingLength]+strings.Repeat("*", maskingLength))
 	log.Println("webhook channel: ", p.config.WebhookChannel)
 
 	for line := range p.file.Lines {
