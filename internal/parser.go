@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -10,6 +11,17 @@ import (
 type parser struct {
 	config  *Config
 	pattern *regexp.Regexp
+}
+
+func (p *parser) setup(config *Config) error {
+	pattern, err := regexp.Compile(config.Pattern)
+	if err != nil {
+		return fmt.Errorf("regexp compile error: %w", err)
+	}
+
+	p.config = config
+	p.pattern = pattern
+	return nil
 }
 
 func (p *parser) isMatchedAll(line string) (string, string, bool) {

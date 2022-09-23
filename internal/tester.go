@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 )
 
 // Tester is check, test message pattern
@@ -19,11 +18,9 @@ func NewTester() *Tester {
 }
 
 // Test begins tailing the file, check and pass event to the notifier
-func (p *Tester) Test(filename string, config *Config) (err error) {
-	p.config = config
-	p.pattern, err = regexp.Compile(config.Pattern)
-	if err != nil {
-		return fmt.Errorf("regexp compile error: %w", err)
+func (p *Tester) Test(filename string, config *Config) error {
+	if err := p.setup(config); err != nil {
+		return fmt.Errorf("setup error: %w", err)
 	}
 
 	reader, err := newReader(filename)

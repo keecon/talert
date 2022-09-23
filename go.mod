@@ -11,6 +11,7 @@ require (
 	github.com/iwaltgen/magex v0.7.3
 	github.com/magefile/mage v1.14.0
 	github.com/mfridman/tparse v0.11.1
+	github.com/stretchr/testify v1.8.0
 	github.com/urfave/cli/v2 v2.16.3
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	golang.org/x/tools v0.1.12
@@ -169,7 +170,6 @@ require (
 	github.com/ssgreg/nlreturn/v2 v2.2.1 // indirect
 	github.com/stbenjam/no-sprintf-host-port v0.1.1 // indirect
 	github.com/stretchr/objx v0.4.0 // indirect
-	github.com/stretchr/testify v1.8.0 // indirect
 	github.com/subosito/gotenv v1.4.0 // indirect
 	github.com/sylvia7788/contextcheck v1.0.6 // indirect
 	github.com/tdakkota/asciicheck v0.1.1 // indirect

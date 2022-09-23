@@ -5,7 +5,6 @@ import (
 	"log"
 	"math"
 	"os"
-	"regexp"
 	"strings"
 	"time"
 
@@ -52,8 +51,10 @@ func (p *Watcher) Watch(filename string, config *Config) error {
 	return nil
 }
 
-func (p *Watcher) setup(filename string, config *Config) (err error) {
-	p.config = config
+func (p *Watcher) setup(filename string, config *Config) error {
+	if err := p.parser.setup(config); err != nil {
+		return fmt.Errorf("setup error: %w", err)
+	}
 
 	p.config.ReOpen = true
 	p.config.MustExist = true
@@ -65,16 +66,12 @@ func (p *Watcher) setup(filename string, config *Config) (err error) {
 		p.config.Logger = tail.DiscardingLogger
 	}
 
-	p.pattern, err = regexp.Compile(p.config.Pattern)
-	if err != nil {
-		return fmt.Errorf("regexp compile error: %w", err)
-	}
-
-	p.file, err = tail.TailFile(filename, config.Config)
+	file, err := tail.TailFile(filename, config.Config)
 	if err != nil {
 		return fmt.Errorf("open file error: %w", err)
 	}
 
+	p.file = file
 	p.notifier = newNotifier(p.config)
 	return nil
 }
