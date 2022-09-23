@@ -48,8 +48,8 @@ func watch() *cli.Command {
 			},
 			&cli.StringFlag{
 				Name:        "webhook-text-format",
-				Usage:       "slack message text format (must need 3 string placeholder)",
-				Value:       "ALERT LEVEL `%s` :fire: MESSAGE `%s`\n```%s```",
+				Usage:       "slack message text format (must need 2 string placeholder)",
+				Value:       "ALERT LEVEL `%s` :fire: MESSAGE `%s`",
 				Destination: &webhookTextFormat,
 				EnvVars:     []string{"TALERT_WEBHOOK_TEXT_FORMAT"},
 			},

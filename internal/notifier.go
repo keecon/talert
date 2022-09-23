@@ -74,15 +74,20 @@ func (n *notifier) sendEventMessage(evt *eventLog) error {
 func (n *notifier) newWebhookMessage(evt *eventLog) *slack.WebhookPayload {
 	stacktrace := strings.Join(evt.lines, "\n")
 	length := len(stacktrace)
-	if 3900 < length {
-		stacktrace = stacktrace[:3900] + "..."
+	if 3800 < length {
+		stacktrace = stacktrace[:3800] + "..."
+	}
+
+	var stacktraceText string
+	if 0 < len(stacktrace) {
+		stacktraceText = fmt.Sprintf("\n```%s```", stacktrace)
 	}
 
 	return &slack.WebhookPayload{
 		Channel:   n.config.WebhookChannel,
 		Username:  "TAIL ALERT",
 		IconEmoji: ":rotating_light:",
-		Text:      fmt.Sprintf(n.config.WebhookTextFormat, evt.level, evt.message, stacktrace),
+		Text:      fmt.Sprintf(n.config.WebhookTextFormat, evt.level, evt.message) + stacktraceText,
 		Attachments: []*slack.Attachment{
 			{
 				Color: "danger",
