@@ -6,7 +6,7 @@ import (
 	"github.com/keecon/talert/internal"
 )
 
-func watch() *cli.Command {
+func newWatchCmd() *cli.Command {
 	var (
 		webhookURL        string
 		webhookChannel    string

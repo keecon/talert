@@ -6,7 +6,7 @@ import (
 	"github.com/keecon/talert/internal"
 )
 
-func test() *cli.Command {
+func newTestCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "test",
 		Usage: "check message pattern in file",

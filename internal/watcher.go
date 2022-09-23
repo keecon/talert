@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"os"
 	"regexp"
@@ -9,13 +10,11 @@ import (
 	"time"
 
 	"github.com/hpcloud/tail"
-	"golang.org/x/exp/slices"
 )
 
 // Watcher is tailing the file, check and pass event to the notifier
 type Watcher struct {
-	config   *Config
-	pattern  *regexp.Regexp
+	parser
 	file     *tail.Tail
 	notifier *notifier
 }
@@ -26,95 +25,86 @@ func NewWatcher() *Watcher {
 }
 
 // Watch begins tailing the file, check and pass event to the notifier
-func (w *Watcher) Watch(filename string, config *Config) error {
-	if err := w.setup(filename, config); err != nil {
+func (p *Watcher) Watch(filename string, config *Config) error {
+	if err := p.setup(filename, config); err != nil {
 		return err
 	}
-	defer w.file.Cleanup()
+	defer p.file.Cleanup()
 
-	fmt.Printf("start watch `%s`\n", filename)
-	fmt.Printf("watch levels `%s`\n", w.config.Levels)
-	fmt.Printf("watch hostname `%s`\n", w.notifier.hostname)
+	log.Println("watch file: ", filename)
+	log.Println("watch level: ", p.config.Levels)
+	log.Println("watch hostname: ", p.notifier.hostname)
 
-	urlLength := len(w.config.WebhookURL)
+	urlLength := len(p.config.WebhookURL)
 	maskingLength := int(math.Min(float64(urlLength), 20))
-	fmt.Printf("webhook url `%s%s`\n", w.config.WebhookURL[:urlLength-maskingLength], strings.Repeat("*", maskingLength))
+	log.Println("webhook url: ", p.config.WebhookURL[:urlLength-maskingLength], strings.Repeat("*", maskingLength))
+	log.Println("webhook channel: ", p.config.WebhookChannel)
 
-	for line := range w.file.Lines {
-		matches := w.pattern.FindStringSubmatch(line.Text)
+	for line := range p.file.Lines {
+		if l, m, ok := p.isMatchedAll(line.Text); ok {
+			evt := newEvent(l, m, line.Time)
 
-		for _, v := range w.config.Excludes {
-			if strings.Contains(line.Text, v) {
-				continue
-			}
-		}
-
-		if w.isStartLogLine(matches) {
-			evt := newEvent(matches, line.Time)
-
-			for evt != nil && slices.Contains(config.Levels, evt.level) {
-				evt = w.collectEventLog(evt)
+			for evt != nil {
+				evt = p.collectEventLog(evt)
 			}
 		}
 	}
 	return nil
 }
 
-func (w *Watcher) setup(filename string, config *Config) (err error) {
-	w.config = config
+func (p *Watcher) setup(filename string, config *Config) (err error) {
+	p.config = config
 
-	w.config.ReOpen = true
-	w.config.MustExist = true
-	w.config.Follow = true
-	if w.config.Location == nil {
-		w.config.Location = &tail.SeekInfo{Whence: os.SEEK_END}
+	p.config.ReOpen = true
+	p.config.MustExist = true
+	p.config.Follow = true
+	if p.config.Location == nil {
+		p.config.Location = &tail.SeekInfo{Whence: os.SEEK_END}
 	}
-	if w.config.Logger == nil {
-		w.config.Logger = tail.DiscardingLogger
+	if p.config.Logger == nil {
+		p.config.Logger = tail.DiscardingLogger
 	}
 
-	w.pattern, err = regexp.Compile(w.config.Pattern)
+	p.pattern, err = regexp.Compile(p.config.Pattern)
 	if err != nil {
 		return fmt.Errorf("regexp compile error: %w", err)
 	}
 
-	w.file, err = tail.TailFile(filename, config.Config)
+	p.file, err = tail.TailFile(filename, config.Config)
 	if err != nil {
 		return fmt.Errorf("open file error: %w", err)
 	}
 
-	w.notifier = newNotifier(w.config)
+	p.notifier = newNotifier(p.config)
 	return nil
 }
 
-func (w *Watcher) isStartLogLine(matches []string) bool {
-	return 2 < len(matches)
-}
-
-func (w *Watcher) collectEventLog(evt *eventLog) *eventLog {
+func (p *Watcher) collectEventLog(evt *eventLog) *eventLog {
 	event := evt
-	fmt.Printf("%s: collect start `%s`\n", event.time, event.message)
+	log.Println("starting collect stacktrace: ", event.message)
 
 	for {
 		select {
-		case line, more := <-w.file.Lines:
+		case line, more := <-p.file.Lines:
 			if !more {
-				w.notifier.ch <- event
+				p.notifier.ch <- event
 				return nil
 			}
 
-			matches := w.pattern.FindStringSubmatch(line.Text)
+			matches := p.pattern.FindStringSubmatch(line.Text)
+			if p.isLogLine(matches) {
+				p.notifier.ch <- event
 
-			if w.isStartLogLine(matches) {
-				w.notifier.ch <- event
-
-				return newEvent(matches, line.Time)
+				if p.isMatchedLevel(matches[1]) && !p.isMatchedExclude(line.Text) {
+					return newEvent(matches[1], matches[2], line.Time)
+				}
+				return nil
 			}
 
-			event.lines = append(evt.lines, line.Text)
+			event.stacktrace = append(event.stacktrace, line.Text)
 
 		case <-time.After(3 * time.Second):
-			w.notifier.ch <- event
+			p.notifier.ch <- event
 			return nil
 		}
 	}

@@ -3,15 +3,14 @@ package internal
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
-	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 // Tester is check, test message pattern
 type Tester struct {
+	parser
 }
 
 // NewTester creates tester instance.
@@ -20,8 +19,9 @@ func NewTester() *Tester {
 }
 
 // Test begins tailing the file, check and pass event to the notifier
-func (w *Tester) Test(filename string, config *Config) error {
-	pattern, err := regexp.Compile(config.Pattern)
+func (p *Tester) Test(filename string, config *Config) (err error) {
+	p.config = config
+	p.pattern, err = regexp.Compile(config.Pattern)
 	if err != nil {
 		return fmt.Errorf("regexp compile error: %w", err)
 	}
@@ -33,16 +33,8 @@ func (w *Tester) Test(filename string, config *Config) error {
 
 	for v := range reader.lines {
 		line := string(v)
-		matches := pattern.FindStringSubmatch(line)
-
-		for _, v := range config.Excludes {
-			if strings.Contains(line, v) {
-				continue
-			}
-		}
-
-		if 2 < len(matches) && slices.Contains(config.Levels, matches[1]) {
-			fmt.Println(line)
+		if _, _, ok := p.isMatchedAll(string(v)); ok {
+			log.Println(line)
 		}
 	}
 	return nil
@@ -70,8 +62,9 @@ func newReader(filename string) (*reader, error) {
 
 func (r *reader) readlines() {
 	defer func() {
+		close(r.lines)
 		if err := r.file.Close(); err != nil {
-			fmt.Println("close file error: ", err)
+			log.Println("close file error: ", err)
 		}
 	}()
 
@@ -79,6 +72,4 @@ func (r *reader) readlines() {
 	for scanner.Scan() {
 		r.lines <- scanner.Bytes()
 	}
-
-	close(r.lines)
 }

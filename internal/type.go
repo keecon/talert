@@ -29,16 +29,16 @@ type Config struct {
 }
 
 type eventLog struct {
-	level   string
-	message string
-	lines   []string
-	time    time.Time
+	level      string
+	message    string
+	stacktrace []string
+	time       time.Time
 }
 
-func newEvent(tokens []string, time time.Time) *eventLog {
+func newEvent(level, message string, time time.Time) *eventLog {
 	return &eventLog{
-		level:   tokens[1],
-		message: tokens[2],
+		level:   level,
+		message: message,
 		time:    time,
 	}
 }

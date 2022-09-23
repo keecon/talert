@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -22,7 +23,7 @@ type notifier struct {
 func newNotifier(config *Config) *notifier {
 	hostname, err := os.Hostname()
 	if err != nil {
-		fmt.Println("os hostname error: ", err)
+		log.Println("os hostname error: ", err)
 		hostname = "unknown"
 	}
 
@@ -50,13 +51,13 @@ func (n *notifier) run() {
 
 		n.events[evt.Key()] = evt
 		if err := n.sendEventMessage(evt); err != nil {
-			fmt.Println("send event message error: ", err)
+			log.Println("send event message error: ", err)
 		}
 	}
 }
 
 func (n *notifier) sendEventMessage(evt *eventLog) error {
-	fmt.Printf("%s: send `%s` (%d)\n", evt.time, evt.message, len(evt.lines))
+	log.Printf("send message - %s (%d)\n", evt.message, len(evt.stacktrace))
 
 	statusText := "ok"
 	_, err := n.rc.R().
@@ -66,13 +67,13 @@ func (n *notifier) sendEventMessage(evt *eventLog) error {
 		Post(n.config.WebhookURL)
 
 	if err == nil {
-		fmt.Println("send event message complete: ", statusText)
+		log.Println("send event message complete: ", statusText)
 	}
 	return err
 }
 
 func (n *notifier) newWebhookMessage(evt *eventLog) *slack.WebhookPayload {
-	stacktrace := strings.Join(evt.lines, "\n")
+	stacktrace := strings.Join(evt.stacktrace, "\n")
 	length := len(stacktrace)
 	if 3800 < length {
 		stacktrace = stacktrace[:3800] + "..."

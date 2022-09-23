@@ -50,8 +50,13 @@ func main() {
 		},
 
 		Commands: cli.Commands{
-			watch(),
-			test(),
+			newWatchCmd(),
+			newTestCmd(),
+		},
+
+		Before: func(ctx *cli.Context) error {
+			log.SetFlags(0)
+			return nil
 		},
 	}
 
