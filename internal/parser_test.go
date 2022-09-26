@@ -27,6 +27,24 @@ func TestParserMatchedAll(t *testing.T) {
 			message: "test message",
 			success: true,
 		},
+		{
+			name:    "Nginx",
+			pattern: "^[0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} \\[([a-z]+)\\] (.*)$",
+			levels:  []string{"crit"},
+			text:    "2022/09/26 11:35:21 [crit] test message",
+			level:   "crit",
+			message: "test message",
+			success: true,
+		},
+		{
+			name:    "Zap",
+			pattern: "^.*\"level\":\"([a-z]+)\".*\"msg\":\"([\\w\\s]+)\".*$",
+			levels:  []string{"error"},
+			text:    "{\"level\":\"error\",\"time\":\"09-26T11:22:43.744\",\"logger\":\"test\",\"msg\":\"test message\"}",
+			level:   "error",
+			message: "test message",
+			success: true,
+		},
 	}
 
 	newParser := func(t *testing.T, v record) *parser {
