@@ -47,7 +47,7 @@ func Test() error {
 	mg.Deps(Lint)
 
 	return script.ExecStdout(
-		fmt.Sprintf("go test ./... -timeout 10s -cover -json"),
+		"go test ./... -timeout 10s -cover -json",
 		"tparse -all",
 	)
 }
