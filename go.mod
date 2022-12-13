@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/fatih/color v1.13.0
-	github.com/go-git/go-git/v5 v5.5.0
+	github.com/go-git/go-git/v5 v5.5.1
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/golangci/golangci-lint v1.50.1
 	github.com/hpcloud/tail v1.0.0
@@ -140,7 +140,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
 	github.com/phayes/checkstyle v0.0.0-20170904204023-bfd46e6a821d // indirect
-	github.com/pjbgf/sha1cd v0.2.0 // indirect
+	github.com/pjbgf/sha1cd v0.2.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/polyfloyd/go-errorlint v1.0.5 // indirect
@@ -188,7 +188,7 @@ require (
 	github.com/ultraware/funlen v0.0.3 // indirect
 	github.com/ultraware/whitespace v0.0.5 // indirect
 	github.com/uudashr/gocognit v1.0.6 // indirect
-	github.com/xanzy/ssh-agent v0.3.2 // indirect
+	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/yagipy/maintidx v1.0.0 // indirect
 	github.com/yeya24/promlinter v0.2.0 // indirect
