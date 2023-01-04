@@ -18,6 +18,7 @@ func TestParserMatchedAll(t *testing.T) {
 		success  bool
 	}
 	// https://regoio.herokuapp.com/
+	// https://regexr.com/
 	dataset := []record{
 		{
 			name:    "Logback",
