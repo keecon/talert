@@ -2,9 +2,9 @@ package internal
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"math"
-	"os"
 	"strings"
 	"time"
 
@@ -60,7 +60,7 @@ func (p *Watcher) setup(filename string, config *Config) error {
 	p.config.MustExist = true
 	p.config.Follow = true
 	if p.config.Location == nil {
-		p.config.Location = &tail.SeekInfo{Whence: os.SEEK_END}
+		p.config.Location = &tail.SeekInfo{Whence: io.SeekEnd}
 	}
 	if p.config.Logger == nil {
 		p.config.Logger = tail.DiscardingLogger
