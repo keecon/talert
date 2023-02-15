@@ -8,7 +8,7 @@ require (
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/golangci/golangci-lint v1.51.1
 	github.com/hpcloud/tail v1.0.0
-	github.com/iwaltgen/magex v0.8.4
+	github.com/iwaltgen/magex v0.8.5
 	github.com/magefile/mage v1.14.0
 	github.com/mfridman/tparse v0.11.1
 	github.com/stretchr/testify v1.8.1
@@ -43,7 +43,7 @@ require (
 	github.com/bombsimon/wsl/v3 v3.3.0 // indirect
 	github.com/breml/bidichk v0.2.3 // indirect
 	github.com/breml/errchkjson v0.3.0 // indirect
-	github.com/briandowns/spinner v1.19.0 // indirect
+	github.com/briandowns/spinner v1.21.0 // indirect
 	github.com/butuzov/ireturn v0.1.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/charithe/durationcheck v0.0.9 // indirect
@@ -205,6 +205,7 @@ require (
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/term v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
