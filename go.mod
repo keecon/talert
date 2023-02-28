@@ -11,7 +11,7 @@ require (
 	github.com/iwaltgen/magex v0.8.5
 	github.com/magefile/mage v1.14.0
 	github.com/mfridman/tparse v0.12.1
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	github.com/urfave/cli/v2 v2.24.4
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	golang.org/x/tools v0.6.0
