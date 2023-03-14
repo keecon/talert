@@ -3,7 +3,7 @@ module github.com/keecon/talert
 go 1.19
 
 require (
-	github.com/fatih/color v1.14.1
+	github.com/fatih/color v1.15.0
 	github.com/go-git/go-git/v5 v5.6.0
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/golangci/golangci-lint v1.51.2
