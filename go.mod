@@ -9,7 +9,7 @@ require (
 	github.com/golangci/golangci-lint v1.52.2
 	github.com/hpcloud/tail v1.0.0
 	github.com/iwaltgen/magex v0.8.5
-	github.com/magefile/mage v1.14.0
+	github.com/magefile/mage v1.15.0
 	github.com/mfridman/tparse v0.12.1
 	github.com/stretchr/testify v1.8.2
 	github.com/urfave/cli/v2 v2.25.3
