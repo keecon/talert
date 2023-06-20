@@ -12,7 +12,7 @@ require (
 	github.com/magefile/mage v1.15.0
 	github.com/mfridman/tparse v0.12.2
 	github.com/stretchr/testify v1.8.4
-	github.com/urfave/cli/v2 v2.25.6
+	github.com/urfave/cli/v2 v2.25.7
 	golang.org/x/exp v0.0.0-20230510235704-dd950f8aeaea
 	golang.org/x/tools v0.9.3
 )
