@@ -62,4 +62,4 @@ tmp/**/*
 .direnv
 
 # asdf
-.tool-version
+.tool-versions
