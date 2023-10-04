@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/fatih/color v1.15.0
 	github.com/go-git/go-git/v5 v5.9.0
-	github.com/go-resty/resty/v2 v2.8.0
+	github.com/go-resty/resty/v2 v2.9.1
 	github.com/golangci/golangci-lint v1.54.2
 	github.com/hpcloud/tail v1.0.0
 	github.com/iwaltgen/magex v0.9.0
