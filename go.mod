@@ -1,6 +1,7 @@
 module github.com/keecon/talert
 
 go 1.21
+toolchain go1.22.0
 
 require (
 	github.com/fatih/color v1.16.0
@@ -8,7 +9,7 @@ require (
 	github.com/go-resty/resty/v2 v2.11.0
 	github.com/golangci/golangci-lint v1.56.1
 	github.com/hpcloud/tail v1.0.0
-	github.com/iwaltgen/magex v0.9.0
+	github.com/iwaltgen/magex v0.10.0
 	github.com/magefile/mage v1.15.0
 	github.com/mfridman/tparse v0.13.2
 	github.com/stretchr/testify v1.8.4
@@ -56,7 +57,7 @@ require (
 	github.com/charithe/durationcheck v0.0.10 // indirect
 	github.com/charmbracelet/lipgloss v0.7.1 // indirect
 	github.com/chavacava/garif v0.1.0 // indirect
-	github.com/cloudflare/circl v1.3.3 // indirect
+	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/curioswitch/go-reassign v0.2.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
