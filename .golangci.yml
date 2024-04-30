@@ -1,7 +1,9 @@
 run:
-  deadline: 10m
+  timeout: 10m
   tests: false
-  skip-dirs:
+
+issues:
+  exclude-dirs:
   - api
   - bin
   - build
