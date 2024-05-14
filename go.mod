@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/fatih/color v1.17.0
 	github.com/go-git/go-git/v5 v5.12.0
-	github.com/go-resty/resty/v2 v2.12.0
+	github.com/go-resty/resty/v2 v2.13.1
 	github.com/golangci/golangci-lint v1.58.1
 	github.com/hpcloud/tail v1.0.0
 	github.com/iwaltgen/magex v0.10.0
