@@ -27,7 +27,7 @@ archives:
     format: zip
 
 changelog:
-  skip: false
+  disable: false
   filters:
     exclude:
     - 'chore: bump version'
