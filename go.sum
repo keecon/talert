@@ -444,8 +444,8 @@ github.com/matttproud/golang_protobuf_extensions v1.0.1 h1:4hp9jkHxhMHkqkrB3Ix0j
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
 github.com/mfridman/buildversion v0.3.0 h1:hehEX3IbBZJBqquXctUEOWJfIM46P0ku9naK9h1BGuY=
 github.com/mfridman/buildversion v0.3.0/go.mod h1:sfXvYxwfmLvkklTJLv9xJ0Wffw57z9ZFOK4KOGJYafU=
-github.com/mfridman/tparse v0.13.3 h1:h+Bct7XdEqIanyPa+nTasPyHHc8/J1v6TwgrDJI6uKs=
-github.com/mfridman/tparse v0.13.3/go.mod h1:eeL2k/ABOvEmiONxfezeOh8uRhcKSczGZwytvM1z+3g=
+github.com/mfridman/tparse v0.14.0 h1:BWacK4RHnCZPej/6G9IiQvZesggas2G+qI39bM8t6X8=
+github.com/mfridman/tparse v0.14.0/go.mod h1:eeL2k/ABOvEmiONxfezeOh8uRhcKSczGZwytvM1z+3g=
 github.com/mgechev/revive v1.3.7 h1:502QY0vQGe9KtYJ9FpxMz9rL+Fc/P13CI5POL4uHCcE=
 github.com/mgechev/revive v1.3.7/go.mod h1:RJ16jUbF0OWC3co/+XTxmFNgEpUPwnnA0BRllX2aDNA=
 github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG+4E0Y=

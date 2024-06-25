@@ -10,7 +10,7 @@ require (
 	github.com/hpcloud/tail v1.0.0
 	github.com/iwaltgen/magex v0.10.0
 	github.com/magefile/mage v1.15.0
-	github.com/mfridman/tparse v0.13.3
+	github.com/mfridman/tparse v0.14.0
 	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli/v2 v2.27.2
 	golang.org/x/exp v0.0.0-20240103183307-be819d1f06fc
