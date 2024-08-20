@@ -1,7 +1,8 @@
 module github.com/keecon/talert
 
-go 1.22.0
-toolchain go1.22.5
+go 1.22.1
+
+toolchain go1.22.6
 
 require (
 	github.com/fatih/color v1.17.0
