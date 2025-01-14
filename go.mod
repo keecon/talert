@@ -7,7 +7,7 @@ toolchain go1.22.6
 require (
 	github.com/fatih/color v1.18.0
 	github.com/go-git/go-git/v5 v5.13.1
-	github.com/go-resty/resty/v2 v2.16.2
+	github.com/go-resty/resty/v2 v2.16.3
 	github.com/golangci/golangci-lint v1.63.4
 	github.com/hpcloud/tail v1.0.0
 	github.com/iwaltgen/magex v0.10.1
