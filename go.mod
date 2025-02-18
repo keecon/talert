@@ -1,8 +1,7 @@
 module github.com/keecon/talert
 
 go 1.22.1
-
-toolchain go1.22.6
+toolchain go1.23.6
 
 require (
 	github.com/fatih/color v1.18.0
@@ -12,7 +11,7 @@ require (
 	github.com/hpcloud/tail v1.0.0
 	github.com/iwaltgen/magex v0.10.1
 	github.com/magefile/mage v1.15.0
-	github.com/mfridman/tparse v0.16.0
+	github.com/mfridman/tparse v0.17.0
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v2 v2.27.5
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
@@ -60,7 +59,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/charithe/durationcheck v0.0.10 // indirect
 	github.com/charmbracelet/lipgloss v1.0.0 // indirect
-	github.com/charmbracelet/x/ansi v0.4.2 // indirect
+	github.com/charmbracelet/x/ansi v0.8.0 // indirect
 	github.com/chavacava/garif v0.1.0 // indirect
 	github.com/ckaznocha/intrange v0.3.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
@@ -144,7 +143,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mattn/go-zglob v0.0.4 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
-	github.com/mfridman/buildversion v0.3.0 // indirect
 	github.com/mgechev/revive v1.5.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
