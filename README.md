@@ -5,3 +5,12 @@
 [![version](https://img.shields.io/badge/version-v0.4.0-blue.svg)](https://github.com/keecon/talert/releases/latest)
 
 read, check and alert from continuously updated files
+
+## development
+
+```bash
+go mod tidy
+go install tool
+
+mage test build
+```
