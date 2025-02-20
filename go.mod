@@ -15,9 +15,7 @@ require (
 )
 
 tool (
-	github.com/fatih/color
 	github.com/golangci/golangci-lint/cmd/golangci-lint
-	github.com/iwaltgen/magex
 	github.com/magefile/mage
 	github.com/mfridman/tparse
 )
