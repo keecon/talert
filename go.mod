@@ -10,7 +10,7 @@ require (
 	github.com/iwaltgen/magex v0.10.1
 	github.com/magefile/mage v1.15.0
 	github.com/stretchr/testify v1.10.0
-	github.com/urfave/cli/v2 v2.27.5
+	github.com/urfave/cli/v2 v2.27.6
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
 )
 
