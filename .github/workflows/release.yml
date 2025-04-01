@@ -32,7 +32,7 @@ jobs:
         script: |
           return Math.round((new Date()).getTime() / 1000);
 
-    - uses: goreleaser/goreleaser-action@v6.2.1
+    - uses: goreleaser/goreleaser-action@v6.3.0
       with:
         version: latest
         args: release --clean
