@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/fatih/color v1.18.0
 	github.com/go-git/go-git/v5 v5.16.5
-	github.com/go-resty/resty/v2 v2.17.1
+	github.com/go-resty/resty/v2 v2.17.2
 	github.com/hpcloud/tail v1.0.0
 	github.com/iwaltgen/magex v0.11.1
 	github.com/magefile/mage v1.15.0
