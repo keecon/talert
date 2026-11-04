@@ -98,8 +98,8 @@ func (n *notifier) sendEventMessage(evt *eventLog) error {
 func (n *notifier) newWebhookMessage(evt *eventLog) *slack.WebhookPayload {
 	stacktrace := strings.Join(evt.stacktrace, "\n")
 	length := len(stacktrace)
-	if 3800 < length {
-		stacktrace = stacktrace[:3800] + "..."
+	if maxStackBytes < length {
+		stacktrace = stacktrace[:maxStackBytes] + "..."
 	}
 
 	var stacktraceText string

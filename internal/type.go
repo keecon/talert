@@ -7,6 +7,8 @@ import (
 	"github.com/hpcloud/tail"
 )
 
+const maxStackBytes = 32 * 1024
+
 // Config is used to specify how a file must be tailed.
 type Config struct {
 	tail.Config

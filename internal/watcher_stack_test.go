@@ -30,7 +30,7 @@ func TestStackLimitPreservesNextEvent(t *testing.T) {
 				close(done)
 			}()
 			go func() {
-				for i := 0; i < 4000; i++ {
+				for i := 0; i < maxStackBytes+2; i++ {
 					select {
 					case lines <- &tail.Line{Text: line}:
 					case <-done:
@@ -41,7 +41,7 @@ func TestStackLimitPreservesNextEvent(t *testing.T) {
 			select {
 			case event := <-p.notifier.ch:
 				stack := strings.Join(event.stacktrace, "\n")
-				if len(stack) > 3800 || !strings.Contains(stack, "[truncated]") || !utf8.ValidString(stack) {
+				if len(stack) > maxStackBytes || !strings.Contains(stack, "[truncated]") || !utf8.ValidString(stack) {
 					t.Fatalf("invalid truncated stack: bytes=%d validUTF8=%t", len(stack), utf8.ValidString(stack))
 				}
 			case <-time.After(time.Second):
@@ -53,7 +53,7 @@ func TestStackLimitPreservesNextEvent(t *testing.T) {
 
 func TestStackLimitLeavesNextLogLine(t *testing.T) {
 	p, lines := stackTestWatcher(t)
-	lines <- &tail.Line{Text: strings.Repeat("x", 4000)}
+	lines <- &tail.Line{Text: strings.Repeat("x", maxStackBytes+1)}
 	go func() { lines <- &tail.Line{Text: "ERROR next"} }()
 	p.collectEventLog(newEvent("ERROR", "first", time.Now()))
 	first := <-p.notifier.ch

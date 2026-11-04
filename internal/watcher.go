@@ -111,13 +111,13 @@ func (p *Watcher) collectEventLogUntil(event *eventLog, deadline <-chan time.Tim
 			if len(event.stacktrace) > 0 {
 				separator = 1
 			}
-			if stackSize+separator+len(line.Text) > 3800 {
+			if stackSize+separator+len(line.Text) > maxStackBytes {
 				const marker = "\n...[truncated]"
 				stack := strings.Join(event.stacktrace, "\n")
 				if separator > 0 {
 					stack += "\n"
 				}
-				limit := 3800 - len(marker)
+				limit := maxStackBytes - len(marker)
 				if len(stack) < limit {
 					n := min(len(line.Text), limit-len(stack))
 					for n > 0 && n < len(line.Text) && !utf8.RuneStart(line.Text[n]) {
