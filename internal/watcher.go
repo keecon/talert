@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -35,9 +34,6 @@ func (p *Watcher) Watch(filename string, config *Config) error {
 	log.Println("watch level: ", p.config.Levels)
 	log.Println("watch hostname: ", p.notifier.hostname)
 
-	urlLength := len(p.config.WebhookURL)
-	maskingLength := int(math.Min(float64(urlLength), 20))
-	log.Println("webhook url: ", p.config.WebhookURL[:urlLength-maskingLength]+strings.Repeat("*", maskingLength))
 	log.Println("webhook channel: ", p.config.WebhookChannel)
 
 	for line := range p.file.Lines {

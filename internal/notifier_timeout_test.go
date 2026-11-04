@@ -21,9 +21,10 @@ func (c logChannel) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
-func TestNotifierTimeoutContinuesAndSuppressesDuplicates(t *testing.T) {
+func TestNotifierTimeoutContinuesAndRetriesFailedEvent(t *testing.T) {
 	t.Parallel()
 	requests := make(chan string, 4)
+	var firstAttempts atomic.Int32
 	release := make(chan struct{})
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var payload struct {
@@ -33,7 +34,7 @@ func TestNotifierTimeoutContinuesAndSuppressesDuplicates(t *testing.T) {
 			return
 		}
 		requests <- payload.Text
-		if payload.Text == "ERROR first" {
+		if payload.Text == "ERROR first" && firstAttempts.Add(1) == 1 {
 			select {
 			case <-release:
 			case <-r.Context().Done():
@@ -65,11 +66,20 @@ func TestNotifierTimeoutContinuesAndSuppressesDuplicates(t *testing.T) {
 	}
 	select {
 	case got := <-requests:
-		if got != "ERROR second" {
-			t.Fatalf("next request = %q; duplicate was sent", got)
+		if got != "ERROR first" {
+			t.Fatalf("next request = %q; failed event was not retried", got)
 		}
 	case <-time.After(7 * time.Second):
 		t.Fatal("next event was not sent after the request stalled")
+	}
+
+	select {
+	case got := <-requests:
+		if got != "ERROR second" {
+			t.Fatalf("following request = %q", got)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("following event was not sent")
 	}
 
 	foundTimeout := false
