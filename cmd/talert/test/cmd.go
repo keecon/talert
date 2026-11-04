@@ -9,8 +9,13 @@ import (
 // NewCmd creates Command
 func NewCmd() *cli.Command {
 	return &cli.Command{
-		Name:  "test",
-		Usage: "check message pattern in file",
+		Name:      "test",
+		Usage:     "Show matching log lines without sending notifications",
+		ArgsUsage: "FILE",
+		Description: "Read FILE once, show lines matching the pattern and filters, then exit.\n" +
+			"See talert --help for global options and list input rules.\n\n" +
+			"Example:\n" +
+			"  talert --pattern '^(ERROR|WARN) (.*)$' --level ERROR,WARN test app.log",
 
 		Action: func(ctx *cli.Context) error {
 			filename := ctx.Args().First()

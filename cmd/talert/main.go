@@ -13,8 +13,14 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name:     "tail alert",
-		Usage:    "read, check and alert from continuously updated files",
+		Name:      "talert",
+		Usage:     "Filter logs and send matching events to Slack",
+		ArgsUsage: "FILE",
+		Description: "Place global options before the command.\n\n" +
+			"List options (--level, --exclude, --webhook-owner):\n" +
+			"  Repeat the option or separate values with commas.\n" +
+			"  Environment variables also use commas.\n" +
+			"  Leading and trailing whitespace is trimmed.",
 		Version:  internal.Version(),
 		Compiled: internal.BuildDate(),
 		Authors: []*cli.Author{
@@ -33,20 +39,20 @@ func main() {
 				Name:    "pattern",
 				Aliases: []string{"p"},
 				Value:   "^.+\\s+([A-Z]+).* : (.+)$",
-				Usage:   "message pattern in a log line (must need 2 submatch)",
+				Usage:   "Parse log lines using `REGEXP`; group 1 = level, group 2 = message (at least 2 groups required)",
 				EnvVars: []string{"TALERT_PATTERN"},
 			},
 			&cli.StringSliceFlag{
 				Name:    "exclude",
 				Aliases: []string{"e"},
-				Usage:   "exclude message word",
+				Usage:   "Skip lines containing any `TEXT` substring (case-sensitive)",
 				EnvVars: []string{"TALERT_EXCLUDE"},
 			},
 			&cli.StringSliceFlag{
 				Name:    "level",
 				Aliases: []string{"l"},
 				Value:   cli.NewStringSlice("ERROR"),
-				Usage:   "notify log level",
+				Usage:   "Match any specified log `LEVEL` (case-sensitive)",
 				EnvVars: []string{"TALERT_LEVEL"},
 			},
 		},
