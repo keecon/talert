@@ -41,11 +41,18 @@ func newNotifier(config *Config) *notifier {
 }
 
 func (n *notifier) run() {
+	var lastCleanup time.Time
 	for evt := range n.ch {
-		for key, timestamp := range n.events {
-			if evt.time.Sub(timestamp) >= 5*time.Minute {
-				delete(n.events, key)
+		if lastCleanup.IsZero() {
+			lastCleanup = evt.time
+		}
+		if evt.time.Sub(lastCleanup) >= 5*time.Minute {
+			for key, timestamp := range n.events {
+				if evt.time.Sub(timestamp) >= 5*time.Minute {
+					delete(n.events, key)
+				}
 			}
+			lastCleanup = evt.time
 		}
 		key := evt.Key()
 		if old, ok := n.events[key]; ok && evt.time.Sub(old) < 5*time.Minute {
