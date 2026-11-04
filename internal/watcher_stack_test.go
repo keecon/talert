@@ -109,6 +109,50 @@ func TestStackCollectionHasOverallDeadline(t *testing.T) {
 	}
 }
 
+func TestStackCollectionEntryPointHasTenSecondDeadline(t *testing.T) {
+	t.Parallel()
+	p, lines := stackTestWatcher(t)
+	done := make(chan struct{})
+	stop := make(chan struct{})
+	defer close(stop)
+	started := time.Now()
+	go func() {
+		defer close(done)
+		p.collectEventLog(newEvent("ERROR", "first", time.Now()))
+	}()
+	go func() {
+		ticker := time.NewTicker(100 * time.Millisecond)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				select {
+				case lines <- &tail.Line{Text: "trace"}:
+				case <-done:
+					return
+				case <-stop:
+					return
+				}
+			case <-done:
+				return
+			case <-stop:
+				return
+			}
+		}
+	}()
+	select {
+	case <-done:
+		if elapsed := time.Since(started); elapsed < 9500*time.Millisecond {
+			t.Fatalf("collection ended too early after %s", elapsed)
+		}
+		if event := <-p.notifier.ch; event.message != "first" {
+			t.Fatalf("got event %q", event.message)
+		}
+	case <-time.After(11 * time.Second):
+		t.Fatal("continuous lines prevented the 10-second deadline")
+	}
+}
+
 func TestStackCollectionKeepsNormalEventBoundary(t *testing.T) {
 	p, lines := stackTestWatcher(t)
 	go func() {
