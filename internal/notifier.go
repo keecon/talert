@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -67,10 +68,14 @@ func (n *notifier) run() {
 }
 
 func (n *notifier) sendEventMessage(evt *eventLog) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	log.Printf("send message - %s (%d)\n", evt.message, len(evt.stacktrace))
 
 	statusText := "ok"
 	_, err := n.rc.R().
+		SetContext(ctx).
 		SetHeader("Content-Type", "application/json").
 		SetBody(n.newWebhookMessage(evt)).
 		SetResult(&statusText).
