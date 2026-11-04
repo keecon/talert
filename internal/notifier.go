@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -33,8 +34,8 @@ func newNotifier(config *Config) *notifier {
 		hostname: hostname,
 		owners:   strings.Join(config.WebhookOwners, ","),
 		events:   map[string]time.Time{},
-		ch:       make(chan *eventLog, 8),
-		rc:       resty.New().SetRetryCount(3),
+		ch:       make(chan *eventLog, 64),
+		rc:       resty.New().SetRetryCount(3).SetRedirectPolicy(resty.NoRedirectPolicy()).SetLogger(webhookLogger{}),
 	}
 
 	go v.run()
@@ -60,9 +61,10 @@ func (n *notifier) run() {
 			continue
 		}
 
-		n.events[key] = evt.time
 		if err := n.sendEventMessage(evt); err != nil {
 			log.Println("send event message error: ", err)
+		} else {
+			n.events[key] = evt.time
 		}
 	}
 }
@@ -73,18 +75,23 @@ func (n *notifier) sendEventMessage(evt *eventLog) error {
 
 	log.Printf("send message - %s (%d)\n", evt.message, len(evt.stacktrace))
 
-	statusText := "ok"
-	_, err := n.rc.R().
+	resp, err := n.rc.R().
 		SetContext(ctx).
 		SetHeader("Content-Type", "application/json").
 		SetBody(n.newWebhookMessage(evt)).
-		SetResult(&statusText).
 		Post(n.config.WebhookURL)
 
-	if err == nil {
-		log.Println("send event message complete: ", statusText)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return context.DeadlineExceeded
+		}
+		return errors.New("webhook request failed")
 	}
-	return err
+	if !resp.IsSuccess() {
+		return fmt.Errorf("webhook HTTP status %d", resp.StatusCode())
+	}
+	log.Println("send event message complete: ", resp.StatusCode())
+	return nil
 }
 
 func (n *notifier) newWebhookMessage(evt *eventLog) *slack.WebhookPayload {
@@ -136,3 +143,10 @@ func (n *notifier) newWebhookMessage(evt *eventLog) *slack.WebhookPayload {
 		},
 	}
 }
+
+// Resty errors may contain webhook URLs or response data.
+type webhookLogger struct{}
+
+func (webhookLogger) Errorf(string, ...interface{}) {}
+func (webhookLogger) Warnf(string, ...interface{})  {}
+func (webhookLogger) Debugf(string, ...interface{}) {}
