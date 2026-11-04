@@ -3,9 +3,8 @@ package internal
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 type parser struct {
@@ -17,6 +16,10 @@ func (p *parser) setup(config *Config) error {
 	pattern, err := regexp.Compile(config.Pattern)
 	if err != nil {
 		return fmt.Errorf("regexp compile error: %w", err)
+	}
+
+	if pattern.NumSubexp() < 2 {
+		return fmt.Errorf("log pattern requires at least 2 capture groups")
 	}
 
 	p.config = config

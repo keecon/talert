@@ -1,13 +1,16 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
 	"net/url"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
-	"unicode/utf8"
 
 	"github.com/hpcloud/tail"
 )
@@ -30,6 +33,22 @@ func (p *Watcher) Watch(filename string, config *Config) error {
 		return err
 	}
 	defer p.file.Cleanup()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	finished := make(chan struct{})
+	stopped := make(chan struct{})
+	go func() {
+		defer close(stopped)
+		select {
+		case <-ctx.Done():
+			timer := time.AfterFunc(notifierShutdownTimeout, p.notifier.cancel)
+			defer timer.Stop()
+			_ = p.file.Stop()
+			<-finished
+		case <-finished:
+		}
+	}()
+	defer func() { p.notifier.shutdown(notifierShutdownTimeout); close(finished); <-stopped }()
 
 	log.Println("watch file: ", filename)
 	log.Println("watch level: ", p.config.Levels)
@@ -83,26 +102,32 @@ func (p *Watcher) collectEventLog(evt *eventLog) *eventLog {
 
 func (p *Watcher) collectEventLogUntil(event *eventLog, deadline <-chan time.Time) *eventLog {
 	log.Println("starting collect stacktrace: ", event.message)
+	timedOut := false
+	defer func() {
+		if timedOut {
+			const marker = "\n...[collection timeout]"
+			stack := strings.Join(event.stacktrace, "\n")
+			event.stacktrace = []string{truncateStackWithMarker(stack+marker, marker)}
+		}
+		p.notifier.enqueue(event)
+	}()
 	stackSize := 0
 
 	for {
 		select {
 		case <-deadline:
-			p.notifier.ch <- event
+			timedOut = true
 			return nil
 		default:
 		}
 		select {
 		case line, more := <-p.file.Lines:
 			if !more {
-				p.notifier.ch <- event
 				return nil
 			}
 
 			matches := p.pattern.FindStringSubmatch(line.Text)
 			if p.isLogLine(matches) {
-				p.notifier.ch <- event
-
 				if p.isMatchedLevel(matches[1]) && !p.isMatchedExclude(line.Text) {
 					return newEvent(matches[1], matches[2], line.Time)
 				}
@@ -114,36 +139,22 @@ func (p *Watcher) collectEventLogUntil(event *eventLog, deadline <-chan time.Tim
 				separator = 1
 			}
 			if stackSize+separator+len(line.Text) > maxStackBytes {
-				const marker = "\n...[truncated]"
 				stack := strings.Join(event.stacktrace, "\n")
 				if separator > 0 {
 					stack += "\n"
 				}
-				limit := maxStackBytes - len(marker)
-				if len(stack) < limit {
-					n := min(len(line.Text), limit-len(stack))
-					for n > 0 && n < len(line.Text) && !utf8.RuneStart(line.Text[n]) {
-						n--
-					}
-					stack += line.Text[:n]
-				} else if len(stack) > limit {
-					for limit > 0 && !utf8.RuneStart(stack[limit]) {
-						limit--
-					}
-					stack = stack[:limit]
-				}
-				event.stacktrace = []string{stack + marker}
-				p.notifier.ch <- event
+				remaining := maxStackBytes - len(stack) + 1
+				stack += line.Text[:min(len(line.Text), remaining)]
+				event.stacktrace = []string{truncateStack(stack)}
 				return nil
 			}
 			event.stacktrace = append(event.stacktrace, strings.Clone(line.Text))
 			stackSize += separator + len(line.Text)
 
 		case <-time.After(3 * time.Second):
-			p.notifier.ch <- event
 			return nil
 		case <-deadline:
-			p.notifier.ch <- event
+			timedOut = true
 			return nil
 		}
 	}

@@ -28,7 +28,6 @@ func TestWatchStartupDoesNotLogWebhookURL(t *testing.T) {
 		Config:  tail.Config{Location: &tail.SeekInfo{Offset: -1, Whence: io.SeekStart}},
 		Pattern: "(.*)(.*)", WebhookURL: webhookURL,
 	})
-	close(watcher.notifier.ch)
 	if !strings.Contains(logs.String(), "watch file:") {
 		t.Fatal("watch startup log was not recorded")
 	}

@@ -3,70 +3,47 @@ package internal
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"strings"
 )
 
-// Tester is check, test message pattern
-type Tester struct {
-	parser
-}
+// Tester checks log patterns against a file.
+type Tester struct{ parser }
 
-// NewTester creates tester instance.
-func NewTester() *Tester {
-	return &Tester{}
-}
+// NewTester creates a tester instance.
+func NewTester() *Tester { return &Tester{} }
 
-// Test begins tailing the file, check and pass event to the notifier
+// Test prints matching log lines and reports read errors.
 func (p *Tester) Test(filename string, config *Config) error {
 	if err := p.setup(config); err != nil {
 		return fmt.Errorf("setup error: %w", err)
 	}
-
-	reader, err := newReader(filename)
-	if err != nil {
-		return err
-	}
-
-	for v := range reader.lines {
-		line := string(v)
-		if _, _, ok := p.isMatchedAll(string(v)); ok {
-			log.Println(line)
-		}
-	}
-	return nil
-}
-
-type reader struct {
-	file  *os.File
-	lines chan []byte
-}
-
-func newReader(filename string) (*reader, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("open file error: %w", err)
+		return fmt.Errorf("open file error: %w", err)
 	}
-
-	r := &reader{
-		file:  file,
-		lines: make(chan []byte, 1),
-	}
-	go r.readlines()
-
-	return r, nil
-}
-
-func (r *reader) readlines() {
 	defer func() {
-		close(r.lines)
-		if err := r.file.Close(); err != nil {
+		if err := file.Close(); err != nil {
 			log.Println("close file error: ", err)
 		}
 	}()
-
-	scanner := bufio.NewScanner(r.file)
-	for scanner.Scan() {
-		r.lines <- scanner.Bytes()
+	reader := bufio.NewReader(file)
+	for {
+		line, err := reader.ReadString('\n')
+		hasLine := len(line) > 0
+		line = strings.TrimSuffix(strings.TrimSuffix(line, "\n"), "\r")
+		if hasLine {
+			if _, _, ok := p.isMatchedAll(line); ok {
+				log.Println(line)
+			}
+		}
+		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return fmt.Errorf("read file error: %w", err)
+		}
 	}
 }

@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"time"
+	"unicode/utf8"
 
 	"github.com/hpcloud/tail"
 )
@@ -47,4 +48,19 @@ func newEvent(level, message string, time time.Time) *eventLog {
 
 func (e *eventLog) Key() string {
 	return fmt.Sprintf("%s %s", e.level, e.message)
+}
+
+func truncateStack(stack string) string {
+	return truncateStackWithMarker(stack, "\n...[truncated]")
+}
+
+func truncateStackWithMarker(stack, marker string) string {
+	if len(stack) <= maxStackBytes {
+		return stack
+	}
+	limit := maxStackBytes - len(marker)
+	for limit > 0 && !utf8.RuneStart(stack[limit]) {
+		limit--
+	}
+	return stack[:limit] + marker
 }
