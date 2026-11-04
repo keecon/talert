@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/url"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -34,6 +35,7 @@ func (p *Watcher) Watch(filename string, config *Config) error {
 	log.Println("watch level: ", p.config.Levels)
 	log.Println("watch hostname: ", p.notifier.hostname)
 
+	log.Println("webhook destination: ", maskedWebhookURL(p.config.WebhookURL))
 	log.Println("webhook channel: ", p.config.WebhookChannel)
 
 	for line := range p.file.Lines {
@@ -145,4 +147,16 @@ func (p *Watcher) collectEventLogUntil(event *eventLog, deadline <-chan time.Tim
 			return nil
 		}
 	}
+}
+
+func maskedWebhookURL(raw string) string {
+	destination, err := url.Parse(raw)
+	if err != nil || (destination.Scheme != "https" && destination.Scheme != "http") || destination.Host == "" {
+		return "[REDACTED]"
+	}
+	suffix := ""
+	if len(strings.TrimPrefix(destination.Path, "/")) > 8 {
+		suffix = destination.Path[len(destination.Path)-8:]
+	}
+	return destination.Scheme + "://" + destination.Host + "/[REDACTED]" + suffix
 }
