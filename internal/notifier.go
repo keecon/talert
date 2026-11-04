@@ -16,7 +16,7 @@ type notifier struct {
 	config   *Config
 	hostname string
 	owners   string
-	events   map[string]*eventLog
+	events   map[string]time.Time
 	ch       chan *eventLog
 	rc       *resty.Client
 }
@@ -32,7 +32,7 @@ func newNotifier(config *Config) *notifier {
 		config:   config,
 		hostname: hostname,
 		owners:   strings.Join(config.WebhookOwners, ","),
-		events:   map[string]*eventLog{},
+		events:   map[string]time.Time{},
 		ch:       make(chan *eventLog, 8),
 		rc:       resty.New().SetRetryCount(3),
 	}
@@ -42,15 +42,25 @@ func newNotifier(config *Config) *notifier {
 }
 
 func (n *notifier) run() {
+	var lastCleanup time.Time
 	for evt := range n.ch {
-		old := n.events[evt.Key()]
-		if old != nil {
-			if evt.time.Sub(old.time) < 5*time.Minute {
-				continue
+		if lastCleanup.IsZero() {
+			lastCleanup = evt.time
+		}
+		if evt.time.Sub(lastCleanup) >= 5*time.Minute {
+			for key, timestamp := range n.events {
+				if evt.time.Sub(timestamp) >= 5*time.Minute {
+					delete(n.events, key)
+				}
 			}
+			lastCleanup = evt.time
+		}
+		key := evt.Key()
+		if old, ok := n.events[key]; ok && evt.time.Sub(old) < 5*time.Minute {
+			continue
 		}
 
-		n.events[evt.Key()] = evt
+		n.events[key] = evt.time
 		if err := n.sendEventMessage(evt); err != nil {
 			log.Println("send event message error: ", err)
 		}
