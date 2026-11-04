@@ -32,7 +32,6 @@ jobs:
         go-version: ${{ matrix.go-version }}
         check-latest: true
     - uses: golangci/golangci-lint-action@v9
-      if: matrix.go-version == 'stable'
       with:
         version: v2.15.0
 
