@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"time"
+	"unicode/utf8"
 
 	"github.com/hpcloud/tail"
 )
@@ -43,7 +44,7 @@ func (p *Watcher) Watch(filename string, config *Config) error {
 			}
 		}
 	}
-	return nil
+	return p.file.Wait()
 }
 
 func (p *Watcher) setup(filename string, config *Config) error {
@@ -72,10 +73,22 @@ func (p *Watcher) setup(filename string, config *Config) error {
 }
 
 func (p *Watcher) collectEventLog(evt *eventLog) *eventLog {
-	event := evt
+	deadline := time.NewTimer(10 * time.Second)
+	defer deadline.Stop()
+	return p.collectEventLogUntil(evt, deadline.C)
+}
+
+func (p *Watcher) collectEventLogUntil(event *eventLog, deadline <-chan time.Time) *eventLog {
 	log.Println("starting collect stacktrace: ", event.message)
+	stackSize := 0
 
 	for {
+		select {
+		case <-deadline:
+			p.notifier.ch <- event
+			return nil
+		default:
+		}
 		select {
 		case line, more := <-p.file.Lines:
 			if !more {
@@ -93,9 +106,40 @@ func (p *Watcher) collectEventLog(evt *eventLog) *eventLog {
 				return nil
 			}
 
-			event.stacktrace = append(event.stacktrace, line.Text)
+			separator := 0
+			if len(event.stacktrace) > 0 {
+				separator = 1
+			}
+			if stackSize+separator+len(line.Text) > 3800 {
+				const marker = "\n...[truncated]"
+				stack := strings.Join(event.stacktrace, "\n")
+				if separator > 0 {
+					stack += "\n"
+				}
+				limit := 3800 - len(marker)
+				if len(stack) < limit {
+					n := min(len(line.Text), limit-len(stack))
+					for n > 0 && n < len(line.Text) && !utf8.RuneStart(line.Text[n]) {
+						n--
+					}
+					stack += line.Text[:n]
+				} else if len(stack) > limit {
+					for limit > 0 && !utf8.RuneStart(stack[limit]) {
+						limit--
+					}
+					stack = stack[:limit]
+				}
+				event.stacktrace = []string{stack + marker}
+				p.notifier.ch <- event
+				return nil
+			}
+			event.stacktrace = append(event.stacktrace, strings.Clone(line.Text))
+			stackSize += separator + len(line.Text)
 
 		case <-time.After(3 * time.Second):
+			p.notifier.ch <- event
+			return nil
+		case <-deadline:
 			p.notifier.ch <- event
 			return nil
 		}
