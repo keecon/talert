@@ -67,7 +67,7 @@ func TestWatchReopensFileAndStopsNormally(t *testing.T) {
 	watcher := NewWatcher()
 	result := make(chan error, 1)
 	go func() {
-		result <- watcher.Watch(filename, &Config{Config: tail.Config{Poll: true, Logger: log.New(signalWriter{text: "Successfully reopened", ready: reopened}, "", 0)}, Pattern: "^([A-Z]+) (.*)$", Levels: []string{"ERROR"}, WebhookURL: server.URL, WebhookTextFormat: "%s %s"})
+		result <- watcher.Watch(filename, &Config{Config: tail.Config{Poll: true, Location: &tail.SeekInfo{Whence: io.SeekStart}, Logger: log.New(signalWriter{text: "Successfully reopened", ready: reopened}, "", 0)}, Pattern: "^([A-Z]+) (.*)$", Levels: []string{"ERROR"}, WebhookURL: server.URL, WebhookTextFormat: "%s %s"})
 	}()
 	select {
 	case <-ready:
