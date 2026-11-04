@@ -202,3 +202,30 @@ func TestNotifierExpiredSuccessFailureAndRetry(t *testing.T) {
 		t.Errorf("last successful event time = %v", got)
 	}
 }
+
+func TestNotifierRedirectIsNotRetriedOrFollowed(t *testing.T) {
+	var redirected, original atomic.Int32
+	destination := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		redirected.Add(1)
+	}))
+	defer destination.Close()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		original.Add(1)
+		http.Redirect(w, r, destination.URL, http.StatusFound)
+	}))
+	defer server.Close()
+
+	n := newNotifier(&Config{WebhookURL: server.URL})
+	defer close(n.ch)
+	n.rc.SetRetryWaitTime(time.Millisecond).SetRetryMaxWaitTime(time.Millisecond)
+	err := n.sendEventMessage(newEvent("ERROR", "redirect", time.Now()))
+	if err == nil || !strings.Contains(err.Error(), "302") {
+		t.Errorf("redirect error = %v, want HTTP 302 failure", err)
+	}
+	if got := original.Load(); got != 1 {
+		t.Errorf("original server received %d requests, want 1", got)
+	}
+	if got := redirected.Load(); got != 0 {
+		t.Errorf("redirect destination received %d requests, want 0", got)
+	}
+}

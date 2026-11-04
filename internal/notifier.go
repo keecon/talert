@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -35,7 +36,7 @@ func newNotifier(config *Config) *notifier {
 		owners:   strings.Join(config.WebhookOwners, ","),
 		events:   map[string]time.Time{},
 		ch:       make(chan *eventLog, 64),
-		rc:       resty.New().SetRetryCount(3).SetRedirectPolicy(resty.NoRedirectPolicy()).SetLogger(webhookLogger{}),
+		rc:       resty.New().SetRetryCount(3).SetRedirectPolicy(resty.RedirectPolicyFunc(func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse })).SetLogger(webhookLogger{}),
 	}
 
 	go v.run()
