@@ -24,17 +24,8 @@ jobs:
       with:
         go-version-file: go.mod
     - uses: golangci/golangci-lint-action@v9
-
-    - name: check tools
-      id: check_tools
-      uses: andstor/file-existence-action@v3.0.0
       with:
-        files: '/home/runner/go/bin/tparse'
-
-    - name: setup tools
-      if: steps.check_tools.outputs.files_exists != 'true'
-      run: |
-        go install github.com/mfridman/tparse
+        version: v2.15.0
 
     - name: test
-      run: go test ./... -coverprofile coverage.txt -json | tparse -all
+      run: go test ./... -coverprofile coverage.txt -json | go tool tparse -all

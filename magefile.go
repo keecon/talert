@@ -45,14 +45,14 @@ func Test() error {
 	mg.Deps(Lint)
 
 	return script.ExecStdout(
-		"go test ./... -timeout 30s -cover -json",
-		"tparse -all",
+		fmt.Sprintf("%q test ./... -timeout 30s -cover -json", goCmd),
+		fmt.Sprintf("%q tool tparse -all", goCmd),
 	)
 }
 
 // Run lint
 func Lint() error {
-	return sh.RunV("golangci-lint", "run")
+	return sh.RunV(goCmd, "tool", "golangci-lint", "run")
 }
 
 // Remove all artifacts
@@ -237,9 +237,10 @@ func (RELEASE) prepareCreateTag(cv, nv string) func(*git.Repository) error {
 				config.RefSpec("refs/heads/main:refs/heads/main"),
 			},
 		}
-		if err := repo.Push(opt); err == nil {
-			color.Green("create tag preprocessing: %s [%s]", nv, hash.String())
+		if err := repo.Push(opt); err != nil {
+			return fmt.Errorf("failed to push release commit: %w", err)
 		}
-		return err
+		color.Green("create tag preprocessing: %s [%s]", nv, hash.String())
+		return nil
 	}
 }
