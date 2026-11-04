@@ -2,11 +2,13 @@ package internal
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -149,5 +151,54 @@ func TestNotifierQueueBuffersBurst(t *testing.T) {
 		case <-time.After(5 * time.Second):
 			t.Fatalf("received %d of 65 events", i)
 		}
+	}
+}
+
+func TestNotifierExpiredSuccessFailureAndRetry(t *testing.T) {
+	var mu sync.Mutex
+	var received []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var payload struct {
+			Text string `json:"text"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			http.Error(w, "invalid payload", http.StatusBadRequest)
+			return
+		}
+		mu.Lock()
+		received = append(received, payload.Text)
+		attempt := len(received)
+		mu.Unlock()
+		if attempt == 2 {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+
+	n := &notifier{
+		config: &Config{WebhookURL: server.URL, WebhookTextFormat: "%s %s"},
+		events: map[string]time.Time{},
+		ch:     make(chan *eventLog, 4),
+		rc:     resty.New(),
+	}
+	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	for i, offset := range []time.Duration{0, 5 * time.Minute, 5*time.Minute + time.Nanosecond, 5*time.Minute + 2*time.Nanosecond} {
+		event := newEvent("ERROR", "same", start.Add(offset))
+		event.stacktrace = []string{fmt.Sprintf("attempt-%d", i+1)}
+		n.ch <- event
+	}
+	close(n.ch)
+	n.run()
+
+	mu.Lock()
+	defer mu.Unlock()
+	want := []string{"ERROR same\n```attempt-1```", "ERROR same\n```attempt-2```", "ERROR same\n```attempt-3```"}
+	if !reflect.DeepEqual(received, want) {
+		t.Errorf("received %q, want %q", received, want)
+	}
+	if got := n.events["ERROR same"]; !got.Equal(start.Add(5*time.Minute + time.Nanosecond)) {
+		t.Errorf("last successful event time = %v", got)
 	}
 }
