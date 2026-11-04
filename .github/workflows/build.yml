@@ -17,15 +17,27 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: [oldstable, stable]
+    env:
+      GOTOOLCHAIN: local
+      GOWORK: 'off'
 
     steps:
     - uses: actions/checkout@v6
     - uses: actions/setup-go@v6
       with:
-        go-version-file: go.mod
+        go-version: ${{ matrix.go-version }}
+        check-latest: true
     - uses: golangci/golangci-lint-action@v9
+      if: matrix.go-version == 'stable'
       with:
         version: v2.15.0
 
     - name: test
       run: go test ./... -coverprofile coverage.txt -json | go tool tparse -all
+
+    - name: build
+      run: go build ./cmd/...

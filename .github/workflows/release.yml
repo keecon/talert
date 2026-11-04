@@ -8,6 +8,9 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      GOTOOLCHAIN: local
+      GOWORK: 'off'
 
     steps:
     - uses: actions/checkout@v6
@@ -16,7 +19,8 @@ jobs:
 
     - uses: actions/setup-go@v6
       with:
-        go-version-file: go.mod
+        go-version: stable
+        check-latest: true
 
     - uses: actions/github-script@v8
       id: tag
