@@ -49,7 +49,7 @@ func (p *Watcher) Watch(filename string, config *Config) error {
 			}
 		}
 	}
-	return nil
+	return p.file.Wait()
 }
 
 func (p *Watcher) setup(filename string, config *Config) error {
