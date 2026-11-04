@@ -1,8 +1,11 @@
 package internal
 
 import (
+	"encoding/json"
 	"io"
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -39,6 +42,18 @@ func (w signalWriter) Write(p []byte) (int, error) {
 }
 
 func TestWatchReopensFileAndStopsNormally(t *testing.T) {
+	messages := make(chan string, 2)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var payload struct {
+			Text string `json:"text"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			http.Error(w, "invalid payload", http.StatusBadRequest)
+			return
+		}
+		messages <- payload.Text
+	}))
+	defer server.Close()
 	filename := filepath.Join(t.TempDir(), "test.log")
 	if err := os.WriteFile(filename, nil, 0600); err != nil {
 		t.Fatal(err)
@@ -52,7 +67,7 @@ func TestWatchReopensFileAndStopsNormally(t *testing.T) {
 	watcher := NewWatcher()
 	result := make(chan error, 1)
 	go func() {
-		result <- watcher.Watch(filename, &Config{Config: tail.Config{Poll: true, Logger: log.New(signalWriter{text: "Successfully reopened", ready: reopened}, "", 0)}, Pattern: "^(ERROR) (.*)$", Levels: []string{"ERROR"}})
+		result <- watcher.Watch(filename, &Config{Config: tail.Config{Poll: true, Logger: log.New(signalWriter{text: "Successfully reopened", ready: reopened}, "", 0)}, Pattern: "^([A-Z]+) (.*)$", Levels: []string{"ERROR"}, WebhookURL: server.URL, WebhookTextFormat: "%s %s"})
 	}()
 	select {
 	case <-ready:
@@ -86,6 +101,20 @@ func TestWatchReopensFileAndStopsNormally(t *testing.T) {
 	case <-time.After(5 * time.Second):
 		t.Fatal("file was not reopened")
 	}
+	if err := os.WriteFile(filename, []byte("ERROR reopened\nINFO flush\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	for {
+		select {
+		case message := <-messages:
+			if message == "ERROR reopened" {
+				goto received
+			}
+		case <-time.After(5 * time.Second):
+			t.Fatal("reopened file's event was not delivered")
+		}
+	}
+received:
 	if err := watcher.file.Stop(); err != nil {
 		t.Fatal(err)
 	}
