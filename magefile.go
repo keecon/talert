@@ -25,7 +25,6 @@ const (
 type (
 	BUILD   mg.Namespace
 	RELEASE mg.Namespace
-	TEST    mg.Namespace
 )
 
 var (
@@ -70,23 +69,20 @@ func Build() {
 
 // Build platform artifacts
 func (ns BUILD) Platform() error {
-	if err := os.MkdirAll(targetDir, os.ModePerm); err != nil {
-		return fmt.Errorf("failed to make dir `%s`: %w", targetDir, err)
-	}
-
-	if err := sh.RunWith(ns.buildEnv(), goCmd, ns.buildParameters()...); err != nil {
-		return fmt.Errorf("failed to build: %w", err)
-	}
-	return nil
+	return ns.build(ns.buildEnv())
 }
 
 // Build linux artifacts (cross compile)
 func (ns BUILD) Linux() error {
+	return ns.build(ns.buildLinuxEnv())
+}
+
+func (ns BUILD) build(env map[string]string) error {
 	if err := os.MkdirAll(targetDir, os.ModePerm); err != nil {
 		return fmt.Errorf("failed to make dir `%s`: %w", targetDir, err)
 	}
 
-	if err := sh.RunWith(ns.buildLinuxEnv(), goCmd, ns.buildParameters()...); err != nil {
+	if err := sh.RunWith(env, goCmd, ns.buildParameters()...); err != nil {
 		return fmt.Errorf("failed to build: %w", err)
 	}
 	return nil
@@ -98,10 +94,7 @@ func (BUILD) buildParameters() []string {
 		"-X $PACKAGE/internal.commitHash=$COMMIT_HASH " +
 		"-X $PACKAGE/internal.buildDate=$BUILD_DATE"
 
-	var tags string
-	if gotags := os.Getenv("GITHUB_GO_BUILD_TAGS"); gotags != "" {
-		tags = gotags
-	}
+	tags := os.Getenv("GITHUB_GO_BUILD_TAGS")
 
 	return []string{"build", "-trimpath", "-tags", tags, ldflags, "-o", targetDir, "./cmd/..."}
 }
